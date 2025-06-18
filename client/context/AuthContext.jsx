@@ -25,17 +25,28 @@ export const AuthProvider = ({children})=>{
 
     //Check if user is authenticate and if so, set the user dat and connect the socket
 
-    const checkAuth = async ()=>{
-        try {
-           const {data}= await axios.get("/api/auth/check");
-           if(data.success){
-               setAuthUser(data.user);
-               connectSocket(data.user);
-           }
-        } catch (error) {
-            toast.error(error.message)
-        }
+    const checkAuth = async () => {
+    try {
+      const { data } = await axios.get("/api/auth/check");
+      if (data.success) {
+        setAuthUser(data.user);
+        connectSocket(data.user);
+      } else {
+        handleLogoutDueToFailure();
+      }
+    } catch (error) {
+      handleLogoutDueToFailure();
+      toast.error("Session expired. Please login again.");
     }
+  };
+
+  const handleLogoutDueToFailure = () => {
+    setAuthUser(null);
+    setToken(null);
+    setOnlineUsers([]);
+    localStorage.removeItem("token");
+    delete axios.defaults.headers.common["token"];
+  };
 
     //Login function to handle user authentication and socket connnection
     const login = async (state,credentials)=>{
